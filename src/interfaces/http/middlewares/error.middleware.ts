@@ -17,6 +17,14 @@ export function errorMiddleware(
     return;
   }
 
+  if (err instanceof SyntaxError && 'body' in err) {
+    res.status(400).json({
+      error: true,
+      message: 'JSON inválido',
+    });
+    return;
+  }
+
   if (err instanceof ZodError) {
     res.status(422).json({
       error: true,

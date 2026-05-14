@@ -1,7 +1,7 @@
 import {
   connectMongoose,
   disconnectMongoose,
-} from '@infrastructure/database/mongoose.client.js';
+} from '@infrastructure/database/mongoose/mongoose.client.js';
 import { RedisCacheService } from '@infrastructure/cache/redis-cache.service.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';

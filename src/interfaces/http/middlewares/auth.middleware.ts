@@ -1,37 +1,34 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../../../config/env.js';
-
-export interface JwtPayload {
-  sub: string;
-  email: string;
-}
+import { AppError } from '../../../domain/errors/app.error.js';
+import type { AuthUser } from '../ports/http-controller.js';
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user?: JwtPayload;
+    user?: AuthUser;
   }
 }
 
 export function authMiddleware(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    res.status(401).json({ message: 'Token não fornecido' });
+    next(new AppError('Token não fornecido', 401));
     return;
   }
 
   const token = authHeader.slice(7);
 
   try {
-    const payload = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    const payload = jwt.verify(token, env.JWT_SECRET) as AuthUser;
     req.user = payload;
     next();
   } catch {
-    res.status(401).json({ message: 'Token inválido ou expirado' });
+    next(new AppError('Token inválido ou expirado', 401));
   }
 }

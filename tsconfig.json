@@ -46,11 +46,12 @@
 
     /* Paths para Arquitetura Hexagonal */
     "paths": {
+      "@config/*": ["./src/config/*"],
       "@domain/*": ["./src/domain/*"],
       "@application/*": ["./src/application/*"],
       "@infrastructure/*": ["./src/infrastructure/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
+  "exclude": ["node_modules", "dist"]
 }
