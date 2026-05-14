@@ -2,7 +2,12 @@ import { jest } from '@jest/globals';
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../../../domain/errors/app.error.js';
-import { errorMiddleware } from './error.middleware.js';
+
+jest.unstable_mockModule('../../../config/logger.js', () => ({
+  logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn() },
+}));
+
+const { errorMiddleware } = await import('./error.middleware.js');
 
 const makeRes = () =>
   ({

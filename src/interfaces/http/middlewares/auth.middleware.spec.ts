@@ -2,7 +2,12 @@ import { jest } from '@jest/globals';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../../../domain/errors/app.error.js';
-import { authMiddleware } from './auth.middleware.js';
+
+jest.unstable_mockModule('../../../config/env.js', () => ({
+  env: { JWT_SECRET: 'test-secret' },
+}));
+
+const { authMiddleware } = await import('./auth.middleware.js');
 
 const makeReq = (headers: Record<string, string> = {}): Request =>
   ({ headers }) as unknown as Request;
@@ -51,9 +56,7 @@ describe('authMiddleware', () => {
   });
 
   it('should call next with AppError 401 when token is expired', () => {
-    const token = jwt.sign(validPayload, process.env.JWT_SECRET ?? 'secret', {
-      expiresIn: -1,
-    });
+    const token = jwt.sign(validPayload, 'test-secret', { expiresIn: -1 });
     const next = makeNext();
     authMiddleware(
       makeReq({ authorization: `Bearer ${token}` }),
@@ -67,7 +70,7 @@ describe('authMiddleware', () => {
   });
 
   it('should populate req.user and call next without error when token is valid', () => {
-    const token = jwt.sign(validPayload, process.env.JWT_SECRET ?? 'secret');
+    const token = jwt.sign(validPayload, 'test-secret');
     const req = makeReq({ authorization: `Bearer ${token}` });
     const next = makeNext();
 
