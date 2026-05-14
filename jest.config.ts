@@ -33,6 +33,14 @@ const config: Config = {
     '!src/interfaces/http/middlewares/rate-limite.middlware.ts',
     '!src/interfaces/http/middlewares/request-logger.middleware.ts',
   ],
+  coverageThreshold: {
+    global: {
+      lines: 80,
+      functions: 80,
+      branches: 80,
+      statements: 80,
+    },
+  },
 };
 
 export default config;
