@@ -7,6 +7,7 @@
     "build": "rimraf dist && tsc && tsc-alias",
     "start": "node --env-file=.env dist/server.js",
     "dev": "tsx watch --env-file=.env src/interfaces/http/server.ts",
+    "token": "tsx --env-file=.env scripts/generate-token.ts",
     "test": "node --env-file=.env node_modules/.bin/jest",
     "test:watch": "node --env-file=.env node_modules/.bin/jest --watch",
     "test:cov": "node --env-file=.env node_modules/.bin/jest --coverage",
