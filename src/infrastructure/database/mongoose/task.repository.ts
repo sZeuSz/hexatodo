@@ -37,8 +37,9 @@ export class MongoTaskRepository implements TaskRepository {
     throw new Error('Not implemented');
   }
 
-  async findAllByUserId(_userId: string): Promise<Task[]> {
-    throw new Error('Not implemented');
+  async findAllByUserId(userId: string): Promise<Task[]> {
+    const docs = await TaskModel.find({ userId }).sort({ createdAt: -1 });
+    return docs.map(toTask);
   }
 
   async update(
