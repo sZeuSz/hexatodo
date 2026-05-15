@@ -1,7 +1,7 @@
 import type { CreateTaskUseCase } from '@application/use-cases/task/create-task.usecase.js';
 import type { Task } from '@domain/ports/entities/task.entity.js';
 import { jest } from '@jest/globals';
-import type { HttpRequest } from '../ports/http-controller.js';
+import type { HttpRequest } from '../../ports/http-controller.js';
 import { CreateTaskController } from './create-task.controller.js';
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({

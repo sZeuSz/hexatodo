@@ -2,7 +2,7 @@ import type { UpdateTaskUseCase } from '@application/use-cases/task/update-task.
 import { TaskNotFoundException } from '@domain/errors/task-not-found.exception.js';
 import type { Task } from '@domain/ports/entities/task.entity.js';
 import { jest } from '@jest/globals';
-import type { HttpRequest } from '../ports/http-controller.js';
+import type { HttpRequest } from '../../ports/http-controller.js';
 import { UpdateTaskController } from './update-task.controller.js';
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({

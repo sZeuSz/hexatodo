@@ -1,22 +1,11 @@
-import type { GetTaskUseCase } from '@application/use-cases/task/get-task.usecase.js';
+import type { DeleteTaskUseCase } from '@application/use-cases/task/delete-task.usecase.js';
 import { TaskNotFoundException } from '@domain/errors/task-not-found.exception.js';
-import type { Task } from '@domain/ports/entities/task.entity.js';
 import { jest } from '@jest/globals';
-import type { HttpRequest } from '../ports/http-controller.js';
-import { GetTaskController } from './get-task.controller.js';
+import type { HttpRequest } from '../../ports/http-controller.js';
+import { DeleteTaskController } from './delete-task.controller.js';
 
-const makeTask = (overrides: Partial<Task> = {}): Task => ({
-  id: 'task-id-1',
-  title: 'Tarefa teste',
-  completed: false,
-  userId: 'user-id-1',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
-
-const makeUseCase = (): jest.Mocked<GetTaskUseCase> =>
-  ({ execute: jest.fn() }) as unknown as jest.Mocked<GetTaskUseCase>;
+const makeUseCase = (): jest.Mocked<DeleteTaskUseCase> =>
+  ({ execute: jest.fn() }) as unknown as jest.Mocked<DeleteTaskUseCase>;
 
 const makeRequest = (overrides: Partial<HttpRequest> = {}): HttpRequest => ({
   body: {},
@@ -27,24 +16,23 @@ const makeRequest = (overrides: Partial<HttpRequest> = {}): HttpRequest => ({
   ...overrides,
 });
 
-describe('GetTaskController', () => {
-  it('should return 200 with task', async () => {
+describe('DeleteTaskController', () => {
+  it('should return 204 with null body', async () => {
     const useCase = makeUseCase();
-    const task = makeTask();
-    useCase.execute.mockResolvedValue(task);
+    useCase.execute.mockResolvedValue(undefined);
 
-    const controller = new GetTaskController(useCase);
+    const controller = new DeleteTaskController(useCase);
     const response = await controller.handle(makeRequest());
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual(task);
+    expect(response.statusCode).toBe(204);
+    expect(response.body).toBeNull();
   });
 
   it('should call use case with correct id and userId', async () => {
     const useCase = makeUseCase();
-    useCase.execute.mockResolvedValue(makeTask());
+    useCase.execute.mockResolvedValue(undefined);
 
-    const controller = new GetTaskController(useCase);
+    const controller = new DeleteTaskController(useCase);
     await controller.handle(makeRequest());
 
     expect(useCase.execute).toHaveBeenCalledWith('task-id-1', 'user-id-1');
@@ -52,7 +40,7 @@ describe('GetTaskController', () => {
 
   it('should throw UnauthorizedException when user is not present', async () => {
     const useCase = makeUseCase();
-    const controller = new GetTaskController(useCase);
+    const controller = new DeleteTaskController(useCase);
 
     await expect(
       controller.handle(makeRequest({ user: undefined })),
@@ -63,7 +51,7 @@ describe('GetTaskController', () => {
     const useCase = makeUseCase();
     useCase.execute.mockRejectedValue(new TaskNotFoundException());
 
-    const controller = new GetTaskController(useCase);
+    const controller = new DeleteTaskController(useCase);
 
     await expect(controller.handle(makeRequest())).rejects.toThrow(
       TaskNotFoundException,

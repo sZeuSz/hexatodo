@@ -152,7 +152,7 @@ Handlers globais garantem que nenhum erro escapa sem ser logado e sem derrubar o
 - `unhandledRejection` — promise rejeitada sem `catch`
 - `uncaughtException` — exceção fora do ciclo async (ex: `setTimeout`)
 
-Em ambos os casos: loga o erro com contexto completo e encerra com `process.exit(1)`. O orquestrador (Docker, PM2, Kubernetes) reinicia o processo limpo. **Processo em estado desconhecido é mais perigoso que processo reiniciando.**
+Em ambos os casos: loga o erro com contexto completo e encerra com `process.exit(1)`. O orquestrador (Docker, PM2, Kubernetes) pode reinicia o processo limpo. **Lembrando que processo em estado desconhecido é mais perigoso que processo reiniciando.**
 
 ---
 
