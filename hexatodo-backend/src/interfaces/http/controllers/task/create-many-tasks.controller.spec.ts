@@ -52,6 +52,22 @@ describe('CreateManyTasksController', () => {
     ]);
   });
 
+  it('should include description in DTO when provided', async () => {
+    const useCase = makeUseCase();
+    useCase.execute.mockResolvedValue([makeTask()]);
+
+    const controller = new CreateManyTasksController(useCase);
+    await controller.handle(
+      makeRequest({
+        body: { tasks: [{ title: 'Tarefa 1', description: 'Descrição' }] },
+      }),
+    );
+
+    expect(useCase.execute).toHaveBeenCalledWith([
+      { title: 'Tarefa 1', description: 'Descrição', userId: 'user-id-1' },
+    ]);
+  });
+
   it('should throw UnauthorizedException when user is not present', async () => {
     const useCase = makeUseCase();
     const controller = new CreateManyTasksController(useCase);
