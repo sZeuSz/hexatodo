@@ -1,6 +1,7 @@
 import { TaskNotFoundException } from '@domain/errors/task-not-found.exception.js';
 import type { Task } from '@domain/ports/entities/task.entity.js';
 import type { TaskRepository } from '@domain/ports/repositories/task.repository.js';
+import type { CacheService } from '@domain/ports/services/cache.service.js';
 import { jest } from '@jest/globals';
 import { DeleteTaskUseCase } from './delete-task.usecase.js';
 
@@ -9,6 +10,11 @@ const makeRepository = (): jest.Mocked<TaskRepository> =>
     findById: jest.fn(),
     delete: jest.fn(),
   }) as unknown as jest.Mocked<TaskRepository>;
+
+const makeCache = (): jest.Mocked<CacheService> =>
+  ({
+    delByPattern: jest.fn().mockResolvedValue(void 0 as never),
+  }) as unknown as jest.Mocked<CacheService>;
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
   id: 'task-id-1',
@@ -21,22 +27,25 @@ const makeTask = (overrides: Partial<Task> = {}): Task => ({
 });
 
 describe('DeleteTaskUseCase', () => {
-  it('should delete task when found', async () => {
+  it('should delete task and invalidate cache', async () => {
     const repository = makeRepository();
+    const cache = makeCache();
     repository.findById.mockResolvedValue(makeTask());
     repository.delete.mockResolvedValue(undefined);
 
-    const useCase = new DeleteTaskUseCase(repository);
+    const useCase = new DeleteTaskUseCase(repository, cache);
     await useCase.execute('task-id-1', 'user-id-1');
 
     expect(repository.delete).toHaveBeenCalledWith('task-id-1', 'user-id-1');
+    expect(cache.delByPattern).toHaveBeenCalledWith('tasks:user-id-1:*');
   });
 
   it('should throw TaskNotFoundException when task not found', async () => {
     const repository = makeRepository();
+    const cache = makeCache();
     repository.findById.mockResolvedValue(null);
 
-    const useCase = new DeleteTaskUseCase(repository);
+    const useCase = new DeleteTaskUseCase(repository, cache);
 
     await expect(useCase.execute('task-id-1', 'user-id-1')).rejects.toThrow(
       TaskNotFoundException,
@@ -45,9 +54,10 @@ describe('DeleteTaskUseCase', () => {
 
   it('should throw TaskNotFoundException when task belongs to another user', async () => {
     const repository = makeRepository();
+    const cache = makeCache();
     repository.findById.mockResolvedValue(null);
 
-    const useCase = new DeleteTaskUseCase(repository);
+    const useCase = new DeleteTaskUseCase(repository, cache);
 
     await expect(useCase.execute('task-id-1', 'other-user')).rejects.toThrow(
       TaskNotFoundException,
@@ -56,9 +66,10 @@ describe('DeleteTaskUseCase', () => {
 
   it('should not call delete when task not found', async () => {
     const repository = makeRepository();
+    const cache = makeCache();
     repository.findById.mockResolvedValue(null);
 
-    const useCase = new DeleteTaskUseCase(repository);
+    const useCase = new DeleteTaskUseCase(repository, cache);
 
     await expect(useCase.execute('task-id-1', 'user-id-1')).rejects.toThrow();
     expect(repository.delete).not.toHaveBeenCalled();
