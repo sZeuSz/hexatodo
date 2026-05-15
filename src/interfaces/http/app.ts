@@ -5,6 +5,7 @@ import { env } from '../../config/env.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import { rateLimiter } from './middlewares/rate-limite.middlware.js';
 import { requestLoggerMiddleware } from './middlewares/request-logger.middleware.js';
+import { authRouter } from './routes/auth.routes.js';
 import { taskRouter } from './routes/task.routes.js';
 
 const app: Application = express();
@@ -24,6 +25,7 @@ app.get('/ping', (_req, res) => {
   res.status(200).json({ message: 'pong' });
 });
 
+app.use('/api/auth', authRouter);
 app.use('/api/tasks', taskRouter);
 
 app.use(errorMiddleware);

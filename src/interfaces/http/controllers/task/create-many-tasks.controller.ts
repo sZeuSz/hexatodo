@@ -5,7 +5,7 @@ import type {
   HttpController,
   HttpRequest,
   HttpResponse,
-} from '../ports/http-controller.js';
+} from '../../ports/http-controller.js';
 
 const createManyTasksSchema = z.object({
   tasks: z

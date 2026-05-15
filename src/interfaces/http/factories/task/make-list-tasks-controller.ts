@@ -1,6 +1,6 @@
 import { ListTasksUseCase } from '@application/use-cases/task/list-tasks.usecase.js';
-import { MongoTaskRepository } from '@infrastructure/database/mongoose/task.repository.js';
-import { ListTasksController } from '../controllers/list-tasks.controller.js';
+import { MongoTaskRepository } from '@infrastructure/database/mongoose/task/task.repository.js';
+import { ListTasksController } from '../../controllers/task/list-tasks.controller.js';
 
 export function makeListTasksController(): ListTasksController {
   const repository = new MongoTaskRepository();
