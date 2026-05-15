@@ -94,6 +94,22 @@ describe('CreateManyTasksController', () => {
     ).rejects.toThrow('Limite máximo de 1000');
   });
 
+  it('should include description in DTO when provided', async () => {
+    const useCase = makeUseCase();
+    useCase.execute.mockResolvedValue([makeTask({ description: 'Desc A' })]);
+
+    const controller = new CreateManyTasksController(useCase);
+    await controller.handle(
+      makeRequest({
+        body: { tasks: [{ title: 'Tarefa 1', description: 'Desc A' }] },
+      }),
+    );
+
+    expect(useCase.execute).toHaveBeenCalledWith([
+      { title: 'Tarefa 1', description: 'Desc A', userId: 'user-id-1' },
+    ]);
+  });
+
   it('should throw ZodError when a task title is missing', async () => {
     const useCase = makeUseCase();
     const controller = new CreateManyTasksController(useCase);

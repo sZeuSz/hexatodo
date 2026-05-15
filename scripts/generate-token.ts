@@ -8,4 +8,5 @@ const token = jwt.sign(
   { expiresIn: '1d' },
 );
 
+// eslint-disable-next-line no-console
 console.log(token);
