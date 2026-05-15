@@ -4,7 +4,7 @@ import type {
   HttpController,
   HttpRequest,
   HttpResponse,
-} from '../ports/http-controller.js';
+} from '../../ports/http-controller.js';
 
 const loginSchema = z.object({
   email: z.string().email(),

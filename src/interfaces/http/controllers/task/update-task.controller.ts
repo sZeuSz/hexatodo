@@ -6,7 +6,7 @@ import type {
   HttpController,
   HttpRequest,
   HttpResponse,
-} from '../ports/http-controller.js';
+} from '../../ports/http-controller.js';
 
 const updateTaskSchema = z.object({
   title: z.string().min(1).max(255).optional(),

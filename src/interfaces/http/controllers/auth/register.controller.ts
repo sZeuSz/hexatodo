@@ -4,7 +4,7 @@ import type {
   HttpController,
   HttpRequest,
   HttpResponse,
-} from '../ports/http-controller.js';
+} from '../../ports/http-controller.js';
 
 const registerSchema = z.object({
   email: z.string().email(),

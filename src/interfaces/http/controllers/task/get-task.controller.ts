@@ -4,7 +4,7 @@ import type {
   HttpController,
   HttpRequest,
   HttpResponse,
-} from '../ports/http-controller.js';
+} from '../../ports/http-controller.js';
 
 export class GetTaskController implements HttpController {
   constructor(private readonly getTask: GetTaskUseCase) {}
