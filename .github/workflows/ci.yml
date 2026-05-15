@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # === JOB DO BACKEND ===
+  backend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: hexatodo-backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: hexatodo-backend
+        run: npm ci
+
+      - name: Run linter
+        working-directory: hexatodo-backend
+        run: npm run lint
+
+      - name: Run tests with coverage (Strict Hexagonal)
+        working-directory: hexatodo-backend
+        run: npm run test:cov
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ci-secret-super-safe-minimum-32-characters
+          MONGODB_URI: mongodb://localhost:27017/unused
+          REDIS_URL: redis://localhost:6379
+
+  # === JOB DO FRONTEND ===
+  frontend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: hexatodo-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: hexatodo-frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: hexatodo-frontend
+        run: npm test -- --run

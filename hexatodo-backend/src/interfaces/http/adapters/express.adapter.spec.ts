@@ -66,13 +66,18 @@ describe('adaptRoute', () => {
     const controller = makeController({
       statusCode: 200,
       body: {},
-      cookies: [{ name: 'auth_token', value: 'jwt', httpOnly: true, path: '/' }],
+      cookies: [
+        { name: 'auth_token', value: 'jwt', httpOnly: true, path: '/' },
+      ],
     });
     const res = makeRes();
 
     await adaptRoute(controller)(makeReq(), res, makeNext());
 
-    expect(res.cookie).toHaveBeenCalledWith('auth_token', 'jwt', { httpOnly: true, path: '/' });
+    expect(res.cookie).toHaveBeenCalledWith('auth_token', 'jwt', {
+      httpOnly: true,
+      path: '/',
+    });
   });
 
   it('should clear cookies when controller returns clearCookies', async () => {
