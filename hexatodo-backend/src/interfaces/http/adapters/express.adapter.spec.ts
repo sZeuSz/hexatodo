@@ -13,6 +13,7 @@ const makeReq = (overrides: Partial<Request> = {}): Request =>
     params: { id: '1' },
     query: { page: '1' },
     headers: { authorization: 'Bearer token' },
+    cookies: {},
     user: { sub: 'user-id', email: 'test@test.com' },
     ...overrides,
   }) as unknown as Request;
@@ -21,6 +22,8 @@ const makeRes = (): jest.Mocked<Response> =>
   ({
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
+    cookie: jest.fn().mockReturnThis(),
+    clearCookie: jest.fn().mockReturnThis(),
   }) as unknown as jest.Mocked<Response>;
 
 const makeNext = (): NextFunction => jest.fn() as unknown as NextFunction;
@@ -44,6 +47,7 @@ describe('adaptRoute', () => {
       params: req.params,
       query: req.query,
       headers: req.headers,
+      cookies: req.cookies,
       user: req.user,
     });
   });
@@ -56,6 +60,32 @@ describe('adaptRoute', () => {
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ id: '1' });
+  });
+
+  it('should set cookies when controller returns cookies', async () => {
+    const controller = makeController({
+      statusCode: 200,
+      body: {},
+      cookies: [{ name: 'auth_token', value: 'jwt', httpOnly: true, path: '/' }],
+    });
+    const res = makeRes();
+
+    await adaptRoute(controller)(makeReq(), res, makeNext());
+
+    expect(res.cookie).toHaveBeenCalledWith('auth_token', 'jwt', { httpOnly: true, path: '/' });
+  });
+
+  it('should clear cookies when controller returns clearCookies', async () => {
+    const controller = makeController({
+      statusCode: 200,
+      body: {},
+      clearCookies: ['auth_token'],
+    });
+    const res = makeRes();
+
+    await adaptRoute(controller)(makeReq(), res, makeNext());
+
+    expect(res.clearCookie).toHaveBeenCalledWith('auth_token', { path: '/' });
   });
 
   it('should call next with error when controller throws', async () => {
