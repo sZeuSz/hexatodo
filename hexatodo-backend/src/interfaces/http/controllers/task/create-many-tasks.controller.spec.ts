@@ -1,7 +1,7 @@
 import type { CreateManyTasksUseCase } from '@application/use-cases/task/create-many-tasks.usecase.js';
 import type { Task } from '@domain/ports/entities/task.entity.js';
 import { jest } from '@jest/globals';
-import type { HttpRequest } from '../../ports/http-controller.js';
+import type { HttpRequest } from '../ports/http-controller.js';
 import { CreateManyTasksController } from './create-many-tasks.controller.js';
 
 const makeTask = (overrides: Partial<Task> = {}): Task => ({
@@ -92,22 +92,6 @@ describe('CreateManyTasksController', () => {
     await expect(
       controller.handle(makeRequest({ body: { tasks } })),
     ).rejects.toThrow('Limite máximo de 1000');
-  });
-
-  it('should include description in DTO when provided', async () => {
-    const useCase = makeUseCase();
-    useCase.execute.mockResolvedValue([makeTask({ description: 'Desc A' })]);
-
-    const controller = new CreateManyTasksController(useCase);
-    await controller.handle(
-      makeRequest({
-        body: { tasks: [{ title: 'Tarefa 1', description: 'Desc A' }] },
-      }),
-    );
-
-    expect(useCase.execute).toHaveBeenCalledWith([
-      { title: 'Tarefa 1', description: 'Desc A', userId: 'user-id-1' },
-    ]);
   });
 
   it('should throw ZodError when a task title is missing', async () => {

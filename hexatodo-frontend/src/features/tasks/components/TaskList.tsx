@@ -21,7 +21,7 @@ export default function TaskList({ tasks, isLoading, onUpdate, onDelete }: Props
 
   if (tasks.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-white/10 py-16 text-center">
+      <div className="rounded-xl border border-dashed border-white/10 bg-gray-900/80 py-16 text-center">
         <p className="text-white/40">Nenhuma tarefa encontrada.</p>
         <p className="mt-1 text-sm text-white/30">Crie sua primeira tarefa acima!</p>
       </div>
