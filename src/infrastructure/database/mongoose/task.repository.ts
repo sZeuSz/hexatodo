@@ -33,8 +33,9 @@ export class MongoTaskRepository implements TaskRepository {
     throw new Error('Not implemented');
   }
 
-  async findById(_id: string, _userId: string): Promise<Task | null> {
-    throw new Error('Not implemented');
+  async findById(id: string, userId: string): Promise<Task | null> {
+    const doc = await TaskModel.findOne({ _id: id, userId });
+    return doc ? toTask(doc) : null;
   }
 
   async findAllByUserId(userId: string): Promise<Task[]> {
@@ -43,14 +44,19 @@ export class MongoTaskRepository implements TaskRepository {
   }
 
   async update(
-    _id: string,
-    _userId: string,
-    _data: UpdateTaskDTO,
+    id: string,
+    userId: string,
+    data: UpdateTaskDTO,
   ): Promise<Task | null> {
-    throw new Error('Not implemented');
+    const doc = await TaskModel.findOneAndUpdate(
+      { _id: id, userId },
+      { $set: data },
+      { new: true },
+    );
+    return doc ? toTask(doc) : null;
   }
 
-  async delete(_id: string, _userId: string): Promise<void> {
-    throw new Error('Not implemented');
+  async delete(id: string, userId: string): Promise<void> {
+    await TaskModel.deleteOne({ _id: id, userId });
   }
 }
