@@ -198,6 +198,20 @@ Diferente do PostgreSQL onde seria necessária uma transação explícita (`BEGI
 
 Os use cases foram testados com mocks tipados contra as interfaces de repositório (`jest.Mocked<TaskRepository>`), nunca contra implementações concretas. Essa abordagem garante que a regra de negócio está isolada de qualquer detalhe de infraestrutura — o teste valida o contrato do port, não o comportamento do MongoDB. Os testes continuam passando independente de qual adapter de banco for plugado no futuro.
 
+### Mocks em módulos ESM
+
+O projeto usa `"module": "nodenext"` com ESM nativo. O `jest.mock()` tradicional não funciona nesse contexto porque o hoisting que ele depende não existe em ESM — o módulo já foi avaliado antes do mock ser registrado.
+
+A solução é `jest.unstable_mockModule()` combinado com `await import()` dinâmico após o mock ser declarado:
+
+```ts
+jest.unstable_mockModule('@config/env.js', () => ({ env: { ... } }));
+
+const { MinhaClasse } = await import('./minha-classe.js');
+```
+
+Isso garante que quando o módulo é carregado, o mock já está no lugar. Qualquer módulo que importa `@config/env.js` transitivamente (como `cookie-builder.ts` nos controllers de auth) precisa dessa abordagem nos specs.
+
 ---
 
 ## Setup

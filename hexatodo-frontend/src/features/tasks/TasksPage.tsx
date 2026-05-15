@@ -50,7 +50,7 @@ export default function TasksPage() {
 
         <div>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm text-white/50">{total} tarefa(s) no total</p>
+            <p className="rounded-lg border border-white/10 bg-gray-900/80 px-3 py-1.5 text-sm text-white/50">{total} tarefa(s) no total</p>
           </div>
           <TaskList tasks={tasks} isLoading={isLoading} onUpdate={updateTask} onDelete={deleteTask} />
         </div>
@@ -64,7 +64,7 @@ export default function TasksPage() {
             >
               Anterior
             </button>
-            <span className="flex items-center px-4 text-sm text-white/50">
+            <span className="flex items-center rounded-lg border border-white/10 bg-gray-900/80 px-4 py-2 text-sm text-white/50">
               {page} / {totalPages}
             </span>
             <button
