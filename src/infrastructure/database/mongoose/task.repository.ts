@@ -29,8 +29,9 @@ export class MongoTaskRepository implements TaskRepository {
     return toTask(doc);
   }
 
-  async createMany(_data: CreateTaskDTO[]): Promise<Task[]> {
-    throw new Error('Not implemented');
+  async createMany(data: CreateTaskDTO[]): Promise<Task[]> {
+    const docs = await TaskModel.insertMany(data);
+    return docs.map(toTask);
   }
 
   async findById(id: string, userId: string): Promise<Task | null> {
