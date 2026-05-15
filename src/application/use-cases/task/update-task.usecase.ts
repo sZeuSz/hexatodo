@@ -4,9 +4,13 @@ import type {
   UpdateTaskDTO,
 } from '@domain/ports/entities/task.entity.js';
 import type { TaskRepository } from '@domain/ports/repositories/task.repository.js';
+import type { CacheService } from '@domain/ports/services/cache.service.js';
 
 export class UpdateTaskUseCase {
-  constructor(private readonly taskRepository: TaskRepository) {}
+  constructor(
+    private readonly taskRepository: TaskRepository,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async execute(
     id: string,
@@ -15,6 +19,7 @@ export class UpdateTaskUseCase {
   ): Promise<Task> {
     const task = await this.taskRepository.update(id, userId, data);
     if (!task) throw new TaskNotFoundException();
+    await this.cacheService.delByPattern(`tasks:${userId}:*`);
     return task;
   }
 }

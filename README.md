@@ -40,9 +40,9 @@ Não foi preguiça de configurar migrations :D
 
 Tarefas são flexíveis. Um usuário quer adicionar tags, outro quer subtarefas, outro quer campos customizados. No relacional, cada variação vira uma migration e uma coluna nova. Com MongoDB, o documento simplesmente atende sem cerimônia.
 
-O padrão de acesso também ajudou a decidir: toda query aqui parte de um `userId` isso quer dizer q não tem join, não tem agregação entre entidades, não tem relatório relacional. É basicamente "me dá as tarefas desse usuário" — exatamente o caso onde documento se sai bem sem overhead de schema rígido.
+O padrão de acesso também ajudou a decidir: toda query aqui parte de um `userId` isso quer dizer q não tem join, não tem agregação entre entidades, não tem relatório relacional. É basicamente "me dá as tarefas desse usuário" — exatamente o caso onde documento se sai bem.
 
-O bulk insert ajudou também. Criar até 1.000 tarefas de uma vez vira um `insertMany` com uma roundtrip ao banco. No PostgreSQL isso exigiria transação explícita ou uma abstração do ORM que tira o controle da sua mão.
+O bulk insert ajudou também. Criar até 1.000 tarefas de uma vez vira um `insertMany` com uma roundtrip ao banco. No PostgreSQL isso exigiria transação explícita ou uma abstração do ORM que tira o controle (até oonde eu imaginei).
 
 Dito isso, se o domínio fosse outro — pagamentos, consistência forte entre entidades, relatórios complexos — PostgreSQL seria a escolha certa sem hesitar. Mas pra esse caso o MongoDB é a ferramenta certa.
 ---
@@ -153,6 +153,50 @@ Handlers globais garantem que nenhum erro escapa sem ser logado e sem derrubar o
 - `uncaughtException` — exceção fora do ciclo async (ex: `setTimeout`)
 
 Em ambos os casos: loga o erro com contexto completo e encerra com `process.exit(1)`. O orquestrador (Docker, PM2, Kubernetes) pode reinicia o processo limpo. **Lembrando que processo em estado desconhecido é mais perigoso que processo reiniciando.**
+
+---
+
+## Endpoints
+
+### Auth (público)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/api/auth/register` | Cria conta. Body: `{ email, password }` |
+| `POST` | `/api/auth/login` | Autentica. Body: `{ email, password }`. Retorna `{ token }` |
+
+### Tasks (requer `Authorization: Bearer <token>`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/tasks` | Lista tarefas paginadas. Query: `?page=1&limit=20` |
+| `POST` | `/api/tasks` | Cria uma tarefa. Body: `{ title, description? }` |
+| `POST` | `/api/tasks/bulk` | Cria até 1000 tarefas. Body: `{ tasks: [{ title, description? }] }` |
+| `GET` | `/api/tasks/:id` | Busca tarefa por id |
+| `PATCH` | `/api/tasks/:id` | Atualiza tarefa. Body: `{ title?, description?, completed? }` |
+| `DELETE` | `/api/tasks/:id` | Remove tarefa |
+
+---
+
+## Decisões Técnicas
+
+### Paginação: offset vs cursor
+
+A paginação da listagem de tarefas usa `skip/limit` (offset-based). No PostgreSQL isso é um problema real — o banco faz full scan até a posição, então `OFFSET 10.000` lê 10.000 linhas só para descartá-las.
+
+No MongoDB o comportamento é diferente: com o compound index `{ userId: 1, _id: 1 }` que está definido no model, o `skip()` opera diretamente no índice sem tocar nos documentos. O custo é bem menor e irrelevante para o volume esperado nesse domínio.
+
+A alternativa seria cursor-based pagination (`?cursor=lastId`), que escala infinitamente mas adiciona complexidade na implementação e no cliente. Para esse desafio, eu optei por offset com índice composto mas eu sei desse problema.
+
+### Bulk insert: atomicidade no MongoDB
+
+O endpoint `POST /api/tasks/bulk` usa `insertMany` do Mongoose. No MongoDB, `insertMany` é atômico por documento — cada documento é inserido ou não, sem estado parcial por documento. Isso é suficiente para o caso de uso aqui.
+
+Diferente do PostgreSQL onde seria necessária uma transação explícita (`BEGIN/COMMIT`) para garantir que todos os registros entrem juntos ou nenhum entre. Nesse caso só se fosse realmente necessario no mongo como se as tarefas dependecem entre elas (que náo é o caso).
+
+### Estratégia de testes nos Use Cases
+
+Os use cases foram testados com mocks tipados contra as interfaces de repositório (`jest.Mocked<TaskRepository>`), nunca contra implementações concretas. Essa abordagem garante que a regra de negócio está isolada de qualquer detalhe de infraestrutura — o teste valida o contrato do port, não o comportamento do MongoDB. Os testes continuam passando independente de qual adapter de banco for plugado no futuro.
 
 ---
 

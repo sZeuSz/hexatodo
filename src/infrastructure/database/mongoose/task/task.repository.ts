@@ -3,7 +3,11 @@ import type {
   Task,
   UpdateTaskDTO,
 } from '@domain/ports/entities/task.entity.js';
-import type { TaskRepository } from '@domain/ports/repositories/task.repository.js';
+import type {
+  PaginatedResult,
+  PaginationParams,
+  TaskRepository,
+} from '@domain/ports/repositories/task.repository.js';
 import { TaskModel } from './task.model.js';
 
 function toTask(doc: InstanceType<typeof TaskModel>): Task {
@@ -39,9 +43,26 @@ export class MongoTaskRepository implements TaskRepository {
     return doc ? toTask(doc) : null;
   }
 
-  async findAllByUserId(userId: string): Promise<Task[]> {
-    const docs = await TaskModel.find({ userId }).sort({ createdAt: -1 });
-    return docs.map(toTask);
+  async findAllByUserId(
+    userId: string,
+    { page, limit }: PaginationParams,
+  ): Promise<PaginatedResult<Task>> {
+    const skip = (page - 1) * limit;
+    const [docs, total] = await Promise.all([
+      TaskModel.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      TaskModel.countDocuments({ userId }),
+    ]);
+
+    return {
+      data: docs.map(toTask),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async update(

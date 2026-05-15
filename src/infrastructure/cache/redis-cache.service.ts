@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
 import type { CacheService } from '@domain/ports/services/cache.service.js';
+import { Redis } from 'ioredis';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 
@@ -44,5 +44,10 @@ export class RedisCacheService implements CacheService {
 
   async del(key: string): Promise<void> {
     await this.client.del(key);
+  }
+
+  async delByPattern(pattern: string): Promise<void> {
+    const keys = await this.client.keys(pattern);
+    if (keys.length > 0) await this.client.del(...keys);
   }
 }
